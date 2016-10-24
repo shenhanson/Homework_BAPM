@@ -1,0 +1,97 @@
+---
+title: "Exercise 1B"
+author: "Hanzhong Shen"
+date: "2016/10/22"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE,strip.white  = TRUE,tidy=TRUE,tidy.opts=list(width.cutoff=60,blank=FALSE,highlight=FALSE))
+```
+
+## Exercise 1A
+
+Preparation: Load the libraries
+```{r preparation,results='hide',message=FALSE}
+library(Hmisc)
+library(dplyr)
+```
+
+
+###Exercise 1.1: Loading data into R
+1. Load the demo data set Loan_Data.csv into a data.frame using an appropriate R function.
+    ```{r 1.1.1}
+    demo <- read.csv("Loan_Data.csv",header = T,sep = ";")
+    ```
+
+2. Check the data type of the columns PHON and BAD in the data set. Is this data type appropriate? If not, convert the variables into a more suitable data type.
+    ```{r 1.1.2}
+    demo$PHON<-as.factor(demo$PHON)
+    demo$BAD<-as.factor(demo$BAD)
+    ```
+
+3. Make sure that values of PHON and BAD are, respectively, yes/no and good/bad.
+    ```{r 1.1.3}
+    levels(demo$PHON) <- c("no","yes")
+    levels(demo$BAD) <- c("no","yes")
+    ```
+
+4. Summarize the distribution of all columns in the data set using an appropriate R function. Remember that you can easily find appropriate functions and code snippets via the R help or Google. Every programmer constantly does this, so you should, too.
+    ```{r 1.1.4}
+demo$nDEP<-as.factor(demo$nDEP)
+summary(demo)
+```
+
+###Exercise 1.2: Plotting a histogram
+1. Create a histogram plot that depicts the distribution of BAD. Don’t be surprised if your first attempt fails. This only shows that your solution to task 2 in exercise 1 was correct. Strangely, the hist() function requires numeric data. We could find a better function to do the plotting. Yet, in this exercise, let’s do something else: Without changing your data.frame, simply convert BAD back to a numeric variable in the call of the hist() function.
+
+    ```{r 1.2.1}
+hist(as.numeric(demo$BAD))
+```
+
+2. The hist() function gives us a way to plot the distribution of one variable in a data.frame. There is an alternative function that allows you to create a histogram plot for all variables in a data.frame. Which function is that? Hint: You will need to install package Hmisc.
+
+3. Use the function identified in task 2 to depict the distribution of all variables in a matrix of histograms.
+    ```{r 1.2.2}
+
+par(mar = rep(2, 4))
+hist.data.frame(demo)
+```
+
+###Exercise 1.3: Statistical analysis
+Recall that the column BAD gives the risk status (good or bad) for each applicant. Applicants’ income is available in the column dINC_A. To separate the good and the bad risks in the data.frame, you can use logical indexing (with variable[index] and matrix[row index, column index]).
+
+1. Create two variables, inc.good and inc.bad, which contain the incomes of good and bad credit risks, respectively. You will need to use logical indexing to select the correct rows and data.frame indexing to select the right column.
+    ```{r 1.3.1}
+#inc.good <- filter(select(demo, dINC_A, BAD),BAD=="no")
+#inc.bad <- filter(select(demo, dINC_A, BAD),BAD=="yes")
+inc.good <- demo$dINC_A[demo$BAD=="no"]
+inc.bad <- demo$dINC_A[demo$BAD=="yes"]
+```
+
+2. Depict the distribution of the income of customers with a good and bad risk, respectively, by means of a boxplot. Try Google or search the R help with ??boxplot. On average, which of the two groups earns more?
+    ```{r 1.3.2}
+boxplot(demo$dINC_A~demo$BAD)
+```
+From the plot, we can say that average income of customers with good risk is higher
+
+3. Calculate the difference between the average/mean income of good and bad credit applicants.
+    ```{r 1.3.3}
+mean(inc.good)
+mean(inc.bad)
+```
+
+4. Identify an appropriate statistical test to verify whether the observed income difference is statistically significant. Perform the test and display its results. Hint: A Google search similar to “R statistical test difference in means” will help.
+    ```{r 1.3.4}
+result <- t.test(inc.good, inc.bad)
+result
+```
+
+5. Assign the test result to a variable. Use the print() function to output a message that tells the user
+whether the observed income difference is significant. You can do this with an if() condition by checking the the list entry p.value contained in the test result.
+    ```{r 1.3.5}
+if (result$p.value <= 1*10^-3) {
+    print("The observed income difference is Sigificant")
+} else {"The observed income difference is not Sigificant"}
+```
+
